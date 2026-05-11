@@ -1,31 +1,45 @@
 # Suspicious Microsoft 365 Authentication Activity Investigation
 
-## Executive Summary
+## Overview
 
-This investigation reviewed a QRadar offense involving Microsoft 365 authentication activity from a suspicious IP address. The activity was validated across QRadar, Microsoft Defender XDR Advanced Hunting, Microsoft Entra ID sign-in logs, Entra Risky Users, and AbuseIPDB.
+This investigation analyzed suspicious Microsoft 365 authentication activity identified in IBM QRadar involving a flagged external IP address associated with multiple successful user authentication events.
 
-The investigation determined that the activity was benign authentication behavior with no evidence of account compromise, endpoint compromise, malicious network activity, or elevated user risk.
+The activity was validated across:
+- IBM QRadar
+- Microsoft Defender XDR Advanced Hunting
+- Microsoft Entra ID Sign-In Logs
+- Entra Risky Users
+- AbuseIPDB
 
-## Investigation Evidence
+---
 
-### Authentication Investigation Workflow
+# Investigation Workflow
 
-![Authentication Investigation Overview](screenshots/authentication-investigation-overview.png)
+## 1. QRadar Offense Review
 
-## Key Findings
+Reviewed QRadar offenses and authentication event logs associated with the suspicious IP address.
 
-- QRadar generated multiple Microsoft 365 authentication events associated with a flagged IP address.
-- Microsoft Defender XDR Advanced Hunting confirmed successful authentication activity.
-- DeviceNetworkEvents returned no suspicious outbound endpoint communication.
-- Entra ID sign-in logs showed successful MFA authentication.
-- No associated risky users or high-risk sign-ins were identified.
-- AbuseIPDB reputation review did not identify malicious infrastructure association.
-- No evidence of credential compromise, malware execution, or lateral movement observed.
+### Validation Performed
+- Reviewed offense magnitude and associated events
+- Analyzed authentication activity timeline
+- Verified affected users and source IP activity
+- Confirmed event categorization
 
-## Final Determination
+![QRadar Offense Overview](./screenshots/authentication-investigation-overview.png)
 
-The activity was determined to be benign authentication behavior and not indicative of account compromise or malicious activity.
+---
 
-## SOC Closure Note
+# 2. Microsoft Defender XDR Hunting
 
-Investigated suspicious Microsoft 365 authentication activity observed in QRadar. Validation performed using Microsoft Defender XDR Advanced Hunting, Entra ID sign-in logs, Entra Risky Users, and AbuseIPDB. Successful MFA-authenticated activity was confirmed with no associated malicious endpoint behavior, risky user indicators, or suspicious network activity identified. Activity determined to be benign authentication traffic. Offense closed as false positive.
+Performed Advanced Hunting queries to validate authentication behavior and determine whether endpoint compromise or malicious activity existed.
+
+### KQL Queries Used
+
+```kql
+IdentityLogonEvents
+| where IPAddress == "REDACTED"
+| project Timestamp, AccountUpn, DeviceName, ActionType, Application, IPAddress
+
+DeviceNetworkEvents
+| where RemoteIP == "REDACTED"
+| project Timestamp, DeviceName, RemoteIP, InitiatingProcessFileName
